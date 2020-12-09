@@ -1,0 +1,20 @@
+{
+  "name": "ethlink-request",
+  "version": "0.0.1",
+  "description": "It fetches newly created subdomain and send request to eth.domains to add to the DoH proxy",
+  "main": "dist/index.js",
+  "source": "src/index.ts",
+  "scripts": {
+    "build": "microbundle",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cross-fetch": "^3.0.6",
+    "graphql": "^15.4.0",
+    "graphql-request": "^3.3.0",
+    "microbundle": "^0.12.4",
+    "moment": "^2.29.1"
+  }
+}
