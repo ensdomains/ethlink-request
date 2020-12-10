@@ -117,18 +117,26 @@ const main = async () => {
             }
         });            
     }
-    Object.keys(parents).forEach(key => {
-        let value = parents[key]
+    Object.keys(parents)
+      // .slice(1,10)
+      .forEach((key, index) => {
         if(key.length === 70 && key.match(/^\[.*\]\.eth$/)){
             undecodableDomains = undecodableDomains + 1
         }else{
+            // To be changed from .domains to .link
+            // const fetchUrl = `https://eth.domains/names/${key}.link`
             const fetchUrl = `https://eth.domains/names/${key}.domains`
             console.log(fetchUrl)
-            // fetch(fetchUrl, { method: 'PUT'})
+            fetch(fetchUrl, { method: 'PUT'})
+              .then(c => {
+                console.log(index, key, c.status)
+              })
+              .catch(e => {
+                console.log(index, key, e.message)
+              })
         }
     })
     console.log({totalResolvers,subdomainsLength: subdomains.length, parentsLength: Object.keys(parents).length, nullDomains, undecodableDomains})
-
 }
 
 main()
