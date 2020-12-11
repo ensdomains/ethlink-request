@@ -1,48 +1,8 @@
 export class MyMainClass {}
 import { request, gql } from 'graphql-request'
-const moment = require('moment')
 const fs = require('fs')
 import fetch from 'cross-fetch'
 
-export const GET_BLOCK = gql`
-  query getBlock($timestamp: Int!){
-    blocks(first: 1, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: $timestamp}) {
-      id
-      number
-      timestamp
-    }
-  }   
-`
-
-export const GET_TIMESTAMP = gql`
-  query getTimestamp($blockNumber: Int!){
-    blocks(first: 1, orderBy: timestamp, orderDirection: asc, where: {number: $blockNumber}) {
-      id
-      number
-      timestamp
-    }
-  }  
-`
-
-export const GET_CONTENTHASH_CHANGED = gql`
-  query getContenthashChanged($blockNumber: Int!, $skip: Int!){
-    contenthashChangeds(    
-      first:1000, skip:$skip, orderBy:blockNumber, orderDirection:desc,
-      where:{ blockNumber_gt: $blockNumber }
-    ){
-      blockNumber
-      resolver{
-        address
-        domain{
-          name
-          parent{
-            name
-          }
-        }
-      }
-    }
-  }
-`
 export const GET_CONTENTHASH = gql`
 query getResolvers($skip: Int!){  
   resolvers(first:1000, skip:$skip, where:{contentHash_not:null}){
@@ -56,7 +16,6 @@ query getResolvers($skip: Int!){
 `
 
 const ENSURL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens'
-const BLOCKSURL = 'https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks'
 const filePath = './parents.json'
 let nullDomains = 0
 let parents = {}
