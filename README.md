@@ -12,5 +12,5 @@ yarn build
 ## Running the script
 
 ```
-yarn run
+yarn run exec
 ```
