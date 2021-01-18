@@ -17,6 +17,7 @@ query getResolvers($skip: Int!){
 
 const ENSURL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens'
 const filePath = './parents.json'
+const TLD = 'domains' // TODO: Change to 'link'
 let nullDomains = 0
 let parents = {}
 const appendSubdomains = (orgData, newData) => {
@@ -42,7 +43,16 @@ const main = async () => {
     try {
         if (fs.existsSync(filePath)) {
           parents = JSON.parse(fs.readFileSync(filePath))
-
+          Object.keys(parents).forEach(key => {
+            let children = parents[key]
+            subdomains = [...subdomains, ...children]
+          })
+          console.log({
+            subdomains:subdomains.length,
+            parent:Object.keys(parents).length
+          })
+        }else{
+          throw("Fetch data from subgraph")
         }
     } catch(err) {
         let { resolvers } = await request(ENSURL, GET_CONTENTHASH, { skip })
@@ -77,22 +87,29 @@ const main = async () => {
         });            
     }
     Object.keys(parents)
-      // .slice(1,10)
+      .slice(1,10)
       .forEach((key, index) => {
         if(key.length === 70 && key.match(/^\[.*\]\.eth$/)){
             undecodableDomains = undecodableDomains + 1
+            console.log('***** IGNORE parent', key)
         }else{
-            // To be changed from .domains to .link
-            // const fetchUrl = `https://eth.domains/names/${key}.link`
-            const fetchUrl = `https://eth.domains/names/${key}.domains`
-            console.log(fetchUrl)
-            fetch(fetchUrl, { method: 'PUT'})
-              .then(c => {
-                console.log(index, key, c.status)
-              })
-              .catch(e => {
-                console.log(index, key, e.message)
-              })
+            let children = parents[key]
+            children.forEach(child => {
+            let domain = `${child}.${key}.${TLD}`
+            const fetchUrl = `https://eth.${TLD}/names/${domain}`
+                if(child.length !== 66){
+                    console.log(fetchUrl)
+                    fetch(fetchUrl, { method: 'PUT'})
+                    .then(c => {
+                        console.log(index, domain, c.status)
+                    })
+                    .catch(e => {
+                        console.log(index, domain, e.message)
+                    })
+                }else{
+                    console.log('***** IGNORE child', fetchUrl)
+                }
+            })
         }
     })
     console.log({totalResolvers,subdomainsLength: subdomains.length, parentsLength: Object.keys(parents).length, nullDomains, undecodableDomains})
