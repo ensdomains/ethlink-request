@@ -2,6 +2,7 @@ export class MyMainClass {}
 import { request, gql } from 'graphql-request'
 const fs = require('fs')
 import fetch from 'cross-fetch'
+const { promisify } = require('util')
 
 export const GET_CONTENTHASH = gql`
 query getResolvers($skip: Int!){  
@@ -14,10 +15,10 @@ query getResolvers($skip: Int!){
   }
 }
 `
-
+const sleep = promisify(setTimeout)
 const ENSURL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens'
 const filePath = './parents.json'
-const TLD = 'domains' // TODO: Change to 'link'
+const TLD = 'link'
 let nullDomains = 0
 let parents = {}
 const appendSubdomains = (orgData, newData) => {
@@ -86,32 +87,33 @@ const main = async () => {
             }
         });            
     }
-    Object.keys(parents)
-      .slice(1,10)
-      .forEach((key, index) => {
+    const keys = Object.keys(parents)
+    //   .slice(1,10)
+    for (let index = 0; index < keys.length; index++) {
+        const key = keys[index];
         if(key.length === 70 && key.match(/^\[.*\]\.eth$/)){
             undecodableDomains = undecodableDomains + 1
             console.log('***** IGNORE parent', key)
         }else{
             let children = parents[key]
-            children.forEach(child => {
-            let domain = `${child}.${key}.${TLD}`
-            const fetchUrl = `https://eth.${TLD}/names/${domain}`
+            for (let c = 0; c < children.length; c++) {
+                const child = children[c];
+                let domain = `${child}.${key}.${TLD}`
+                const fetchUrl = `https://eth.${TLD}/names/${domain}`
                 if(child.length !== 66){
-                    console.log(fetchUrl)
-                    fetch(fetchUrl, { method: 'PUT'})
-                    .then(c => {
-                        console.log(index, domain, c.status)
-                    })
-                    .catch(e => {
-                        console.log(index, domain, e.message)
-                    })
+                    let { status } = await fetch(fetchUrl, { method: 'GET'})
+                    if(status !== 200){
+                       await sleep(500)
+                       await fetch(fetchUrl, { method: 'PUT'})
+                    }
+                    console.log(`${status} ${fetchUrl}`)
                 }else{
                     console.log('***** IGNORE child', fetchUrl)
                 }
-            })
+            }
         }
-    })
+    }
+
     console.log({totalResolvers,subdomainsLength: subdomains.length, parentsLength: Object.keys(parents).length, nullDomains, undecodableDomains})
 }
 
